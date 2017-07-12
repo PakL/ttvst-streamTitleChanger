@@ -35,8 +35,8 @@ class StreamTitleChanger extends UIPage {
 				this.psspath = path.join(process.env.TEMP, 'processmonitor.ps1')
 				fs.writeFileSync(this.psspath, script)
 				console.log('[StreamTitleChanger] ' + this.psspath + ' created')
-				self.startProcessMonitor();
 			} catch(e) {
+				self.psspath = ''
 				self.tool.ui.showErrorMessage(e)
 			}
 			
@@ -45,6 +45,20 @@ class StreamTitleChanger extends UIPage {
 					riot.mount(applicationlist)
 				})
 			})
+			let cockpit = self.tool.ui.findPage('Cockpit');
+			if(cockpit != null) {
+				cockpit.on('channelopen', () => {
+					if(cockpit.openChannelObject.name == self.tool.auth.username && this.psspath.length > 0) {
+						self.startProcessMonitor()
+					}
+				})
+				cockpit.on('channelleft', () => {
+					if(self.ls != null) {
+						self.ls.kill()
+						self.ls = null
+					}
+				})
+			}
 		})
 		this.tool.on('exit', () => {
 			if(this.ls != null) {
