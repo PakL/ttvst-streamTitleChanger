@@ -34,6 +34,11 @@
 			self.refs.lang_set_stream_title.innerText = self.titlechanger.i18n.__('Change stream title to:')
 			self.refs.lang_set_stream_game.innerText = self.titlechanger.i18n.__('Change stream game to:')
 		})
+		this.on('update', () => {
+			self.applicationpath = self.opts.app.path
+			self.streamtitle = self.opts.app.title
+			self.streamgame = self.opts.app.game
+		})
 
 		selectApplication() {
 			let files = dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
