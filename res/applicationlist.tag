@@ -1,8 +1,8 @@
 <applicationlist>
 	
 	<application each={ app in applications } no-reorder app={ app }></application>
-	<button ref="addapp" onclick={ addapp }></button>
-	<button ref="saveapps" onclick={ saveapps }></button>
+	<button ref="addapp"></button>
+	<button ref="saveapps"></button>
 
 	<script>
 		const self = this
@@ -13,6 +13,10 @@
 			self.titlechanger = Tool.addons.getAddon('streamTitleChanger')
 			self.refs.addapp.innerHTML = self.titlechanger.i18n.__('Add application')
 			self.refs.saveapps.innerHTML = self.titlechanger.i18n.__('Save settings')
+
+			self.refs.addapp.onclick = self.addapp
+			self.refs.saveapps.onclick = self.saveapps
+
 			self.reloadsettings()
 		})
 

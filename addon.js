@@ -1,4 +1,4 @@
-	"use strict"
+"use strict"
 
 const path = require("path")
 const {spawn} = require('child_process')
@@ -40,11 +40,22 @@ class StreamTitleChanger extends UIPage {
 				self.tool.ui.showErrorMessage(e)
 			}
 			
-			riot.compile('/' + __dirname.replace(/\\/g, '/') + '/res/application.tag', () => {
-				riot.compile('/' + __dirname.replace(/\\/g, '/') + '/res/applicationlist.tag', () => {
+			let applicationScriptElement = document.createElement('script')
+			applicationScriptElement.setAttribute('type', 'application/javascript')
+			applicationScriptElement.setAttribute('src', '/' + __dirname.replace(/\\/g, '/') + '/res/application.js')
+			applicationScriptElement.addEventListener('load', () => {
+				console.log('application.js loaded')
+				let applicationListScriptElement = document.createElement('script')
+				applicationListScriptElement.setAttribute('type', 'application/javascript')
+				applicationListScriptElement.setAttribute('src', '/' + __dirname.replace(/\\/g, '/') + '/res/applicationlist.js')
+				applicationListScriptElement.addEventListener('load', () => {
+					console.log('applicationlist.js loaded')
 					riot.mount(applicationlist)
 				})
+				document.querySelector('body').appendChild(applicationListScriptElement)
 			})
+			document.querySelector('body').appendChild(applicationScriptElement)
+
 			let cockpit = self.tool.ui.findPage('Cockpit');
 			if(cockpit != null) {
 				cockpit.on('channelopen', () => {
@@ -72,6 +83,7 @@ class StreamTitleChanger extends UIPage {
 
 	startProcessMonitor() {
 		const self = this
+		console.log('[StreamTitleChanger] Spawning Powershell with monitoring script')
 		this.ls = spawn('powershell', ["-ExecutionPolicy", "Bypass","-File", this.psspath])
 		this.ls.stdout.setEncoding('utf8')
 		this.ls.stdout.on('data', function(stdout) {

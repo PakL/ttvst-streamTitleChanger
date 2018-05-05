@@ -1,21 +1,22 @@
 <application>
-	<label>
-		<span ref="lang_selected_application"></span>
-		<input type="text" ref="selected_application" class="selected_application" value={ applicationpath } readonly>
-	</label>
-	<label>
-		<button type="button" ref="select_application" onClick={ selectApplication }></button>
-	</label>
+	<fieldset>
+		<label>
+			<span ref="lang_selected_application"></span>
+			<input type="text" ref="selected_application" class="selected_application" value={ applicationpath } readonly>
+		</label>
+		<label>
+			<button type="button" ref="select_application" onClick={ selectApplication }></button>
+		</label>
 
-	<label>
-		<span ref="lang_set_stream_title"></span>
-		<input type="text" ref="stream_title" value={ streamtitle } class="stream_title">
-	</label>
-	<label>
-		<span ref="lang_set_stream_game"></span>
-		<input type="text" ref="stream_game" value={ streamgame } class="stream_game">
-	</label>
-	<hr>
+		<label>
+			<span ref="lang_set_stream_title"></span>
+			<input type="text" ref="stream_title" value={ streamtitle } class="stream_title">
+		</label>
+		<label>
+			<span ref="lang_set_stream_game"></span>
+			<input type="text" ref="stream_game" value={ streamgame } class="stream_game">
+		</label>
+	</fieldset>
 
 	<script>
 		const self = this
