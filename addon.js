@@ -44,12 +44,10 @@ class StreamTitleChanger extends UIPage {
 			applicationScriptElement.setAttribute('type', 'application/javascript')
 			applicationScriptElement.setAttribute('src', '/' + __dirname.replace(/\\/g, '/') + '/res/application.js')
 			applicationScriptElement.addEventListener('load', () => {
-				console.log('application.js loaded')
 				let applicationListScriptElement = document.createElement('script')
 				applicationListScriptElement.setAttribute('type', 'application/javascript')
 				applicationListScriptElement.setAttribute('src', '/' + __dirname.replace(/\\/g, '/') + '/res/applicationlist.js')
 				applicationListScriptElement.addEventListener('load', () => {
-					console.log('applicationlist.js loaded')
 					riot.mount(applicationlist)
 				})
 				document.querySelector('body').appendChild(applicationListScriptElement)
