@@ -48,6 +48,7 @@
 			})
 			if(files != null && files.hasOwnProperty('length') && files.length > 0) {
 				self.applicationpath = files[0]
+				self.opts.app.path = files[0]
 			}
 			self.update()
 		}

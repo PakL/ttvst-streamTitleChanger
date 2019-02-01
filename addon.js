@@ -79,6 +79,10 @@ class StreamTitleChanger extends UIPage {
 		})
 	}
 
+	get icon() {
+		return '🔮'
+	}
+
 	startProcessMonitor() {
 		const self = this
 		console.log('[StreamTitleChanger] Spawning Powershell with monitoring script')
