@@ -5,7 +5,7 @@
 			<input type="text" ref="selected_application" class="selected_application" value={ applicationpath } readonly>
 		</label>
 		<label>
-			<button type="button" ref="select_application" onClick={ selectApplication }></button>
+			<button type="button" ref="select_application" onclick={ selectApplication }></button>
 		</label>
 
 		<label>
@@ -19,38 +19,51 @@
 	</fieldset>
 
 	<script>
-		const self = this
 		const {BrowserWindow, dialog} = require('electron').remote
-		this.titlechanger = null
+		export default {
+			onBeforeMount() {
+				this.titlechanger = this.props.addon
 
-		this.applicationpath = this.opts.app.path
-		this.streamtitle = this.opts.app.title
-		this.streamgame = this.opts.app.game
+				this.applicationpath = this.props.app.path
+				this.streamtitle = this.props.app.title
+				this.streamgame = this.props.app.game
+			},
 
-		this.on('mount', () => {
-			self.titlechanger = Tool.addons.getAddon('streamTitleChanger')
-			self.refs.lang_selected_application.innerText = self.titlechanger.i18n.__('Selected application:')
-			self.refs.select_application.innerText = self.titlechanger.i18n.__('Select an application')
-			self.refs.lang_set_stream_title.innerText = self.titlechanger.i18n.__('Change stream title to:')
-			self.refs.lang_set_stream_game.innerText = self.titlechanger.i18n.__('Change stream game to:')
-		})
-		this.on('update', () => {
-			self.applicationpath = self.opts.app.path
-			self.streamtitle = self.opts.app.title
-			self.streamgame = self.opts.app.game
-		})
+			onMounted() {
+				this.refs = {
+					lang_selected_application: this.$('[ref=lang_selected_application]'),
+					selected_application: this.$('[ref=selected_application]'),
+					select_application: this.$('[ref=select_application]'),
+					lang_set_stream_title: this.$('[ref=lang_set_stream_title]'),
+					stream_title: this.$('[ref=stream_title]'),
+					lang_set_stream_game: this.$('[ref=lang_set_stream_game]'),
+					stream_game: this.$('[ref=stream_game]')
+				}
 
-		selectApplication() {
-			let files = dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
-				title: self.titlechanger.i18n.__('Select an application'),
-				filters: [{name: 'Executeable files', extensions: ['dll', 'exe']}],
-				properties: [ 'openFile' ]
-			})
-			if(files != null && files.hasOwnProperty('length') && files.length > 0) {
-				self.applicationpath = files[0]
-				self.opts.app.path = files[0]
+				this.refs.lang_selected_application.innerText = this.titlechanger.i18n.__('Selected application:')
+				this.refs.select_application.innerText = this.titlechanger.i18n.__('Select an application')
+				this.refs.lang_set_stream_title.innerText = this.titlechanger.i18n.__('Change stream title to:')
+				this.refs.lang_set_stream_game.innerText = this.titlechanger.i18n.__('Change stream game to:')
+			},
+
+			onBeforeUpdate() {
+				this.applicationpath = this.props.app.path
+				this.streamtitle = this.props.app.title
+				this.streamgame = this.props.app.game
+			},
+
+			selectApplication() {
+				let files = dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
+					title: this.titlechanger.i18n.__('Select an application'),
+					filters: [{name: 'Executeable files', extensions: ['dll', 'exe']}],
+					properties: [ 'openFile' ]
+				})
+				if(files != null && files.hasOwnProperty('length') && files.length > 0) {
+					this.applicationpath = files[0]
+					this.props.app.path = files[0]
+				}
+				this.update()
 			}
-			self.update()
 		}
 	</script>
 </application>

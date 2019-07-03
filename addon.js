@@ -20,61 +20,57 @@ class StreamTitleChanger extends UIPage {
 
 		this.lastactiveknown = -1
 
+		let appTag = fs.readFileSync(__dirname.replace(/\\/g, '/') + '/res/application.tag', { encoding: 'utf8' })
+		let code = riot.compileFromString(appTag).code
+		riot.inject(code, 'application', document.location.href)
+
+		let applistTag = fs.readFileSync(__dirname.replace(/\\/g, '/') + '/res/applicationlist.tag', { encoding: 'utf8' })
+		code = riot.compileFromString(applistTag).code
+		riot.inject(code, 'applicationlist', document.location.href)
+
+		let applicationlist = document.createElement('applicationlist')
+
+		this.contentElement = document.createElement('div')
+		this.contentElement.style.padding = '10px'
+		this.contentElement.appendChild(applicationlist)
+		document.querySelector('#contents').appendChild(this.contentElement)
+
+		riot.mount(applicationlist, { addon: this })
+
+		console.log('[StreamTitleChanger] Loading monitoring script into temp folder')
+		try {
+			let script = fs.readFileSync(path.join(__dirname, 'processmonitor.ps1'), {encoding: 'utf8'})
+			this.psspath = path.join(process.env.TEMP, 'processmonitor.ps1')
+			fs.writeFileSync(this.psspath, script)
+			console.log('[StreamTitleChanger] ' + this.psspath + ' created')
+		} catch(e) {
+			this.psspath = ''
+			this.tool.ui.showErrorMessage(e)
+		}
+
 		const self = this
-		this.tool.on('load', () => {
-			let applicationlist = document.createElement('applicationlist')
-
-			self.contentElement = document.createElement('div')
-			self.contentElement.style.padding = '10px'
-			self.contentElement.appendChild(applicationlist)
-			document.querySelector('#contents').appendChild(self.contentElement)
-
-			console.log('[StreamTitleChanger] Loading monitoring script into temp folder')
-			try {
-				let script = fs.readFileSync(path.join(__dirname, 'processmonitor.ps1'), {encoding: 'utf8'})
-				this.psspath = path.join(process.env.TEMP, 'processmonitor.ps1')
-				fs.writeFileSync(this.psspath, script)
-				console.log('[StreamTitleChanger] ' + this.psspath + ' created')
-			} catch(e) {
-				self.psspath = ''
-				self.tool.ui.showErrorMessage(e)
-			}
-			
-			let applicationScriptElement = document.createElement('script')
-			applicationScriptElement.setAttribute('type', 'application/javascript')
-			applicationScriptElement.setAttribute('src', '/' + __dirname.replace(/\\/g, '/') + '/res/application.js')
-			applicationScriptElement.addEventListener('load', () => {
-				let applicationListScriptElement = document.createElement('script')
-				applicationListScriptElement.setAttribute('type', 'application/javascript')
-				applicationListScriptElement.setAttribute('src', '/' + __dirname.replace(/\\/g, '/') + '/res/applicationlist.js')
-				applicationListScriptElement.addEventListener('load', () => {
-					riot.mount(applicationlist)
-				})
-				document.querySelector('body').appendChild(applicationListScriptElement)
+		let cockpit = this.tool.ui.findPage('Cockpit');
+		if(cockpit != null) {
+			cockpit.on('channelopen', () => {
+				if(cockpit.openChannelObject.login == this.tool.auth.username && this.psspath.length > 0) {
+					this.startProcessMonitor()
+				}
 			})
-			document.querySelector('body').appendChild(applicationScriptElement)
+			cockpit.on('channelleft', () => {
+				if(self.ls != null) {
+					self.ls.kill()
+					console.log('[StreamTitleChanger] Stopping monitoring script')
+					self.ls = null
+				}
+			})
+		}
 
-			let cockpit = self.tool.ui.findPage('Cockpit');
-			if(cockpit != null) {
-				cockpit.on('channelopen', () => {
-					if(cockpit.openChannelObject.name == self.tool.auth.username && this.psspath.length > 0) {
-						self.startProcessMonitor()
-					}
-				})
-				cockpit.on('channelleft', () => {
-					if(self.ls != null) {
-						self.ls.kill()
-						self.ls = null
-					}
-				})
-			}
-		})
 		this.tool.on('exit', () => {
-			if(this.ls != null) {
-				this.ls.kill()
+			if(self.ls != null) {
+				self.ls.kill()
 			}
-			if(this.psspath.length > 0) {
-				fs.unlinkSync(this.psspath)
+			if(self.psspath.length > 0) {
+				fs.unlinkSync(self.psspath)
 			}
 		})
 	}

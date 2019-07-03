@@ -1,37 +1,47 @@
 <applicationlist>
 	
-	<application each={ app in applications } no-reorder app={ app }></application>
+	<application each={ app in applications } app={ app } addon={ titlechanger }></application>
 	<button ref="addapp"></button>
 	<button ref="saveapps"></button>
 
 	<script>
-		const self = this
-		this.applications = []
-		this.titlechanger = null
+		export default {
+			onBeforeMount() {
+				this.applications = []
+				this.titlechanger = this.props.addon
+				this.makeAccessible()
+			},
 
-		this.on('mount', () => {
-			self.titlechanger = Tool.addons.getAddon('streamTitleChanger')
-			self.refs.addapp.innerHTML = self.titlechanger.i18n.__('Add application')
-			self.refs.saveapps.innerHTML = self.titlechanger.i18n.__('Save settings')
+			onMounted() {
+				this.refs = {
+					addapp: this.$('[ref=addapp]'),
+					saveapps: this.$('[ref=saveapps]')
+				}
 
-			self.refs.addapp.onclick = self.addapp
-			self.refs.saveapps.onclick = self.saveapps
+				this.refs.addapp.innerHTML = this.titlechanger.i18n.__('Add application')
+				this.refs.saveapps.innerHTML = this.titlechanger.i18n.__('Save settings')
 
-			self.reloadsettings()
-		})
+				this.refs.addapp.onclick = this.addapp
+				this.refs.saveapps.onclick = this.saveapps
 
-		addapp() {
-			self.applications.push({path: '', title: '', game: ''})
-			self.update()
-		}
+				this.reloadsettings()
+			},
 
-		saveapps() {
-			self.titlechanger.saveApplications()
-		}
+			addapp() {
+				this.applications.push({path: '', title: '', game: ''})
+				this.update()
+			},
 
-		reloadsettings() {
-			self.applications = self.titlechanger.settings
-			self.update()
+			saveapps() {
+				this.titlechanger.saveApplications()
+			},
+
+			reloadsettings() {
+				this.applications = []
+				this.update()
+				this.applications = this.titlechanger.settings
+				this.update()
+			}
 		}
 	</script>
 </applicationlist>
