@@ -76,7 +76,7 @@ class StreamTitleChanger extends UIPage {
 	}
 
 	get icon() {
-		return '🔮'
+		return 'Ticket'
 	}
 
 	startProcessMonitor() {
