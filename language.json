@@ -22,5 +22,11 @@
 	},
 	"This message hides in 5 seconds.": {
 		"de": "Diese Nachricht wird in 5 Sekunden versteckt."
+	},
+	"Select a running process": {
+		"de": "Laufenden Prozess auswählen"
+	},
+	"You need to join your channel in order to get a list of running processes. The list refreshes every 15 seconds.": {
+		"de": "Du musst deinem Kanal beitreten um eine Liste laufender Prozesse zu bekommen. Die Liste aktualisiert alle 15 Sekunden."
 	}
 }

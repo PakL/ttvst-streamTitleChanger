@@ -28,14 +28,14 @@ class StreamTitleChanger extends UIPage {
 		code = riot.compileFromString(applistTag).code
 		riot.inject(code, 'applicationlist', document.location.href)
 
-		let applicationlist = document.createElement('applicationlist')
+		this.applicationlist = document.createElement('applicationlist')
 
 		this.contentElement = document.createElement('div')
 		this.contentElement.style.padding = '10px'
-		this.contentElement.appendChild(applicationlist)
+		this.contentElement.appendChild(this.applicationlist)
 		document.querySelector('#contents').appendChild(this.contentElement)
 
-		riot.mount(applicationlist, { addon: this })
+		riot.mount(this.applicationlist, { addon: this })
 
 		console.log('[StreamTitleChanger] Loading monitoring script into temp folder')
 		try {
@@ -84,37 +84,64 @@ class StreamTitleChanger extends UIPage {
 		console.log('[StreamTitleChanger] Spawning Powershell with monitoring script')
 		this.ls = spawn('powershell', ["-ExecutionPolicy", "Bypass","-File", this.psspath])
 		this.ls.stdout.setEncoding('utf8')
+		let dataChunk = ''
 		this.ls.stdout.on('data', function(stdout) {
-			self.checkProcess(stdout.toString())
+			dataChunk += stdout.toString()
+			if(dataChunk.endsWith('\n###')) {
+				self.checkProcess(self.cleanData(dataChunk))
+				dataChunk = ''
+			}
 		});
 		this.ls.on('error', (err) => {
 			self.tool.ui.showErrorMessage(err)
 		})
 	}
 
-	checkProcess(cmdpath) {
-		for(let i = 0; i < this.settings.length; i++) {
-			if(cmdpath == this.settings[i].path && this.lastactiveknown != i) {
-				let update = {}
-				if(this.settings[i].title.length > 0) {
-					update.status = this.settings[i].title
-				}
-				if(this.settings[i].game.length > 0) {
-					update.game = this.settings[i].game
-				}
+	cleanData(dataChunk) {
+		let lines = dataChunk.split('\n')
+		let apps = []
 
-				this.lastactiveknown = i
-				
-				this.tool.ui.showErrorMessage(new Error(
-					this.i18n.__('{{game}} was detected. Stream information are being changed according to your settings.', {game: path.basename(cmdpath)})
-					+ '\n'
-					+ this.i18n.__('This message hides in 5 seconds.')
-				), true)
-				console.log('[StreamTitleChanger] ' + path.basename(cmdpath) + ' is running. Stream information changing...')
-				this.tool.twitchapi.updateChannel(this.tool.cockpit.openChannelId, update, () => {
-					console.log('[StreamTitleChanger] Done.')
-				})
+		for(let i = 0; i < lines.length; i++) {
+			let line = lines[i].trim()
+			if(line == '###') continue
+			if(apps.indexOf(line) < 0) {
+				apps.push(line)
 			}
+		}
+
+		return apps
+	}
+
+	checkProcess(cmdpath) {
+		this.applicationlist._tag.setRunningApps(cmdpath)
+
+		let newSettings = -1
+		for(let i = 0; i < this.settings.length; i++) {
+			if(cmdpath.indexOf(this.settings[i].path) >= 0) {
+				newSettings = i
+			}
+		}
+
+		if(newSettings >= 0 && this.lastactiveknown != newSettings) {
+			let update = {}
+			if(this.settings[newSettings].title.length > 0) {
+				update.status = this.settings[newSettings].title
+			}
+			if(this.settings[newSettings].game.length > 0) {
+				update.game = this.settings[newSettings].game
+			}
+
+			this.lastactiveknown = newSettings
+			
+			this.tool.ui.showErrorMessage(new Error(
+				this.i18n.__('{{game}} was detected. Stream information are being changed according to your settings.', {game: path.basename(this.settings[newSettings].path)})
+				+ '\n'
+				+ this.i18n.__('This message hides in 5 seconds.')
+			), true)
+			console.log('[StreamTitleChanger] ' + path.basename(this.settings[newSettings].path) + ' is running. Stream information changing...')
+			this.tool.twitchapi.updateChannel(this.tool.cockpit.openChannelId, update, () => {
+				console.log('[StreamTitleChanger] Done.')
+			})
 		}
 	}
 

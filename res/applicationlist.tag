@@ -41,6 +41,12 @@
 				this.update()
 				this.applications = this.titlechanger.settings
 				this.update()
+			},
+
+			setRunningApps(apps) {
+				this.$$('application').forEach((t) => {
+					t._tag.setRunningApps(apps)
+				})
 			}
 		}
 	</script>
